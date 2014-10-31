@@ -1,4 +1,9 @@
-BINDATA=
+BINDATA =
+
+gopath = $(firstword $(subst :, ,$(GOPATH)))
+
+bindata = $(shell go list -f '{{.Target}}' github.com/jteeuwen/go-bindata/go-bindata 2> /dev/null || echo $(gopath)/bin/go-bindata)
+gox = $(shell go list -f '{{.Target}}' github.com/mitchellh/gox 2> /dev/null || echo $(gopath)/bin/gox)
 
 dev: build-dev-assets
 	go build
@@ -13,7 +18,7 @@ build-dev-assets:
 build: build-assets
 	gox -osarch="darwin/amd64 darwin/386 linux/amd64 linux/386 windows/amd64 windows/386" -output="./bin/pgweb_{{.OS}}_{{.Arch}}"
 
-setup: $(GOPATH)/bin/gox $(GOPATH)/bin/go-bindata build-dev-assets
+setup: $(gox) $(bindata) build-dev-assets
 	go get
 
 clean:
@@ -21,8 +26,8 @@ clean:
 	rm -f ./bin/*
 	rm -f bindata.go
 
-$(GOPATH)/bin/gox:
-	go get github.com/mitchellh/gox
-
-$(GOPATH)/bin/go-bindata:
+$(bindata):
 	go get github.com/jteeuwen/go-bindata/...
+
+$(gox):
+	go get github.com/mitchellh/gox
