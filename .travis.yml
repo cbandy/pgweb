@@ -4,5 +4,6 @@ go:
 - 1.3
 - tip
 
+before_install: echo $PATH
 install: make setup
 script: make dev
