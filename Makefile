@@ -1,16 +1,19 @@
-dev:
-	rm -f bindata.go
-	go-bindata -debug -ignore=\\.gitignore -ignore=\\.DS_Store -ignore=\\.gitkeep static/...
+BINDATA=
+
+dev: build-dev-assets
 	go build
 	@echo "You can now execute ./pgweb"
 
-build:
-	rm -f bindata.go
-	go-bindata -ignore=\\.gitignore -ignore=\\.DS_Store -ignore=\\.gitkeep static/...
+build-assets:
+	go-bindata $(BINDATA) -ignore=\\.gitignore -ignore=\\.DS_Store -ignore=\\.gitkeep static/...
+
+build-dev-assets:
+	@$(MAKE) --no-print-directory build-assets BINDATA="-debug"
+
+build: build-assets
 	gox -osarch="darwin/amd64 darwin/386 linux/amd64 linux/386 windows/amd64 windows/386" -output="./bin/pgweb_{{.OS}}_{{.Arch}}"
 
-setup: $(GOPATH)/bin/gox $(GOPATH)/bin/go-bindata
-	go-bindata -debug -ignore=\\.gitignore -ignore=\\.DS_Store -ignore=\\.gitkeep static/...
+setup: $(GOPATH)/bin/gox $(GOPATH)/bin/go-bindata build-dev-assets
 	go get
 
 clean:
