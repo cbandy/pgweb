@@ -42,10 +42,13 @@ WHERE pg_class.oid = $1::regclass
   AND pg_class.relnamespace = pg_namespace.oid
   AND pg_namespace.nspname = information_schema.columns.table_schema`
 
-	PG_TABLES = `SELECT
+	PG_TABLES = `WITH
+  schemata AS (SELECT *, ROW_NUMBER() OVER () FROM unnest(current_schemas(false)) x(name))
+SELECT
   pg_class.oid::regclass
-FROM pg_class, pg_namespace
+FROM pg_class, pg_namespace, schemata
 WHERE pg_class.relkind IN ('m', 'r', 'v')
   AND pg_class.relnamespace = pg_namespace.oid
-  AND pg_namespace.nspname = ANY (current_schemas(false))`
+  AND pg_namespace.nspname = schemata.name
+ORDER BY schemata.row_number, pg_class.relname`
 )
